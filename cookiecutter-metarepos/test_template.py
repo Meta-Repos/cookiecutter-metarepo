@@ -8,38 +8,13 @@ This script:
 4. Creates a test plugin
 5. Runs the tests
 """
-import json
 import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
-MIN_PYTHON_VERSION = (3, 11)
-
-def check_requirements():
-    """Check if all requirements are met."""
-    # Check Python version
-    if sys.version_info[:2] < MIN_PYTHON_VERSION:
-        print(f"Error: Python {MIN_PYTHON_VERSION[0]}.{MIN_PYTHON_VERSION[1]} or higher is required")
-        sys.exit(1)
-    
-    # Check if cookiecutter is installed
-    try:
-        subprocess.run(
-            ["cookiecutter", "--version"],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-    except subprocess.CalledProcessError:
-        print("Error: cookiecutter is not installed")
-        print("Please install requirements: pip install -r requirements-test.txt")
-        sys.exit(1)
-    except FileNotFoundError:
-        print("Error: cookiecutter command not found")
-        print("Please install requirements: pip install -r requirements-test.txt")
-        sys.exit(1)
+import yaml
 
 def run_command(cmd, cwd=None, env=None):
     """Run a command and check its return code."""
@@ -75,33 +50,34 @@ def create_cookiecutter_config(output_dir: Path) -> Path:
     config_file = config_dir / "config.yaml"
     
     with open(config_file, "w") as f:
-        json.dump(config, f)
+        yaml.safe_dump(config, f)
     
     return config_file
 
-def setup_venv(meta_dir: Path) -> tuple[str, str]:
-    """Set up virtual environment and return pip and python paths."""
-    print("\nCreating virtual environment...")
-    try:
-        run_command(["python", "-m", "venv", ".venv"], cwd=meta_dir)
-        
-        venv_pip = str(meta_dir / ".venv" / "bin" / "pip")
-        venv_python = str(meta_dir / ".venv" / "bin" / "python")
-        
-        # Verify virtual environment
-        if not os.path.exists(venv_pip) or not os.path.exists(venv_python):
-            raise RuntimeError("Virtual environment creation failed")
-        
-        return venv_pip, venv_python
+def verify_plugin_template(meta_dir: Path) -> None:
+    """Verify that the plugin template was copied correctly."""
+    plugin_template_dir = meta_dir / "plugin-template"
     
-    except Exception as e:
-        print(f"Error setting up virtual environment: {e}")
+    # Check that plugin template exists
+    if not plugin_template_dir.exists():
+        print("Error: plugin-template directory not found")
         sys.exit(1)
+    
+    # Check that cookiecutter.json exists and wasn't rendered
+    cookiecutter_json = plugin_template_dir / "cookiecutter.json"
+    if not cookiecutter_json.exists():
+        print("Error: plugin-template/cookiecutter.json not found")
+        sys.exit(1)
+    
+    # Verify that plugin template variables weren't rendered
+    plugin_dir = plugin_template_dir / "{{cookiecutter.plugin_slug}}"
+    if not plugin_dir.exists():
+        print("Error: plugin template directory structure not preserved")
+        sys.exit(1)
+    
+    print("\nPlugin template verification successful")
 
 def main():
-    # Check requirements first
-    check_requirements()
-    
     # Create test output directory
     script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
     output_dir = script_dir / "test-output"
@@ -142,8 +118,13 @@ def main():
         (meta_dir / "cli" / "__init__.py").touch()
         (meta_dir / "core" / "__init__.py").touch()
         
-        # Set up virtual environment
-        venv_pip, venv_python = setup_venv(meta_dir)
+        # Create virtual environment
+        print("\nCreating virtual environment...")
+        run_command(["python", "-m", "venv", ".venv"], cwd=meta_dir)
+        
+        # Get path to pip in virtual environment
+        venv_pip = str(meta_dir / ".venv" / "bin" / "pip")
+        venv_python = str(meta_dir / ".venv" / "bin" / "python")
         
         # Install build dependencies
         print("\nInstalling build dependencies...")
@@ -152,6 +133,9 @@ def main():
         # Install the package in editable mode with dev dependencies
         print("\nInstalling package in editable mode with dev dependencies...")
         run_command([venv_pip, "install", "-e", ".[dev]"], cwd=meta_dir)
+        
+        # Verify plugin template
+        verify_plugin_template(meta_dir)
         
         # Run core tests
         print("\nRunning core tests...")
@@ -166,14 +150,14 @@ def main():
         print("\nAll tests completed successfully!")
         print(f"\nTest output is available at: {output_dir}")
         
-    except Exception as e:
-        print(f"\nError during testing: {e}")
-        sys.exit(1)
-    finally:
         # Deactivate virtual environment if it exists
         if 'VIRTUAL_ENV' in os.environ:
             print("\nDeactivating virtual environment...")
             del os.environ['VIRTUAL_ENV']
+        
+    except Exception as e:
+        print(f"\nError during testing: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
