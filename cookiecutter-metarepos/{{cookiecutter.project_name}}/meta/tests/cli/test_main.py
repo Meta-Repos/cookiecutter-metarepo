@@ -22,9 +22,6 @@ class TestConfigFunctions:
     
     def test_get_config_path_default(self):
         """Test getting default config path."""
-        if "METAREPOS_CONFIG" in os.environ:
-            del os.environ["METAREPOS_CONFIG"]
-        
         path = get_config_path()
         assert path == Path("metarepo.toml")
     
@@ -36,10 +33,11 @@ class TestConfigFunctions:
         path = get_config_path()
         assert path == config_path
     
-    def test_load_config_missing(self):
+    def test_load_config_missing(self, monkeypatch, tmp_path: Path):
         """Test loading missing config."""
-        if "METAREPOS_CONFIG" in os.environ:
-            del os.environ["METAREPOS_CONFIG"]
+        # Set up a clean environment
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setenv("METAREPOS_CONFIG", str(tmp_path / "metarepo.toml"))
         
         config = load_config()
         assert config == {}
@@ -94,14 +92,14 @@ class TestBasicCommands:
         result = isolated_cli_runner.invoke(cli, ["status"])
         assert result.exit_code == 0
         output = strip_ansi(result.output)
-        assert "Using defaults" in output
-        assert "Not found" in output
+        assert "⚠ Using defaults" in output
+        assert "⚠ Not found" in output
     
     def test_status_command_with_dirs(self, isolated_cli_runner: CliRunner, temp_dir: Path, test_config: Dict):
         """Test the status command with directories."""
         # Create directories
-        (temp_dir / "plugins").mkdir()
-        (temp_dir / "logs").mkdir()
+        (temp_dir / "plugins").mkdir(exist_ok=True)
+        (temp_dir / "logs").mkdir(exist_ok=True)
         
         # Create config
         config_path = temp_dir / "metarepo.toml"
@@ -137,12 +135,12 @@ class TestPluginCommands:
         """Test the plugin list command with no plugin directory."""
         result = isolated_cli_runner.invoke(cli, ["plugin", "list"])
         assert result.exit_code == 0
-        assert "Plugin directory not found" in strip_ansi(result.output)
+        assert "⚠ Plugin directory not found" in strip_ansi(result.output)
     
     def test_plugin_list_empty_dir(self, isolated_cli_runner: CliRunner, temp_dir: Path):
         """Test the plugin list command with empty plugin directory."""
         plugin_dir = temp_dir / "plugins"
-        plugin_dir.mkdir()
+        plugin_dir.mkdir(exist_ok=True)
         os.environ["METAREPOS_PLUGIN_DIR"] = str(plugin_dir)
         
         result = isolated_cli_runner.invoke(cli, ["plugin", "list"])
@@ -159,7 +157,7 @@ class TestPluginCommands:
         """Test the plugin list command with installed plugins."""
         # Create test plugins
         plugin_dir = temp_dir / "plugins"
-        plugin_dir.mkdir()
+        plugin_dir.mkdir(exist_ok=True)
         os.environ["METAREPOS_PLUGIN_DIR"] = str(plugin_dir)
         
         setup_test_plugin("test-plugin-1")
@@ -292,21 +290,15 @@ def test_invalid_command(isolated_cli_runner: CliRunner):
 
 def test_missing_config(isolated_cli_runner: CliRunner):
     """Test CLI behavior with missing config."""
-    if "METAREPOS_CONFIG" in os.environ:
-        del os.environ["METAREPOS_CONFIG"]
-    
     result = isolated_cli_runner.invoke(cli, ["status"])
     assert result.exit_code == 0
-    assert "Using defaults" in strip_ansi(result.output)
+    assert "⚠ Using defaults" in strip_ansi(result.output)
 
 def test_missing_plugin_dir(isolated_cli_runner: CliRunner):
     """Test CLI behavior with missing plugin directory."""
-    if "METAREPOS_PLUGIN_DIR" in os.environ:
-        del os.environ["METAREPOS_PLUGIN_DIR"]
-    
     result = isolated_cli_runner.invoke(cli, ["plugin", "list"])
     assert result.exit_code == 0
-    assert "Plugin directory not found" in strip_ansi(result.output)
+    assert "⚠ Plugin directory not found" in strip_ansi(result.output)
 
 def test_version_format():
     """Test version string format."""

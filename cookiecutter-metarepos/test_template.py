@@ -105,18 +105,26 @@ def run_tests(meta_dir: Path, venv_python: str) -> None:
         "-v"
     ], cwd=meta_dir)
     
-    # Run CLI tests
+    # Run CLI tests with separate coverage file
     print("\nRunning CLI tests...")
     run_command([
         venv_python,
         "-m", "coverage",
         "run",
         "--source=cli",
-        "--append",
+        "--parallel-mode",
         "-m",
         "pytest",
         "tests/cli/",
         "-v"
+    ], cwd=meta_dir)
+    
+    # Combine coverage data
+    print("\nCombining coverage data...")
+    run_command([
+        venv_python,
+        "-m", "coverage",
+        "combine"
     ], cwd=meta_dir)
     
     # Generate coverage reports

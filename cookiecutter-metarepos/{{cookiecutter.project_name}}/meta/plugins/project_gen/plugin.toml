@@ -1,0 +1,50 @@
+# Project generation plugin configuration
+
+name = "project_gen"
+version = "0.1.0"
+description = "Generates projects from cookiecutter templates"
+
+# Directory for storing templates
+template_dir = "templates"
+
+# Default templates to include
+[templates.python_package]
+name = "python_package"
+description = "Basic Python package template"
+version = "0.1.0"
+url = "https://github.com/audreyfeldroy/cookiecutter-pypackage"
+
+[templates.fastapi]
+name = "fastapi"
+description = "FastAPI project template"
+version = "0.1.0"
+url = "https://github.com/tiangolo/full-stack-fastapi-postgresql"
+
+[templates.react_app]
+name = "react_app"
+description = "React application template"
+version = "0.1.0"
+url = "https://github.com/facebook/create-react-app"
+
+# Post-generation hooks
+[hooks]
+shell = [
+    "git init",
+    "pip install -e .[dev]"
+]
+python = [
+    "hooks.setup:configure_environment",
+    "hooks.git:initialize_repo"
+]
+
+# Event namespaces:
+# - plugin:project_gen:project_gen:started
+# - plugin:project_gen:project_gen:stopped
+# - plugin:project_gen:generated
+# - plugin:project_gen:template_added
+# - plugin:project_gen:template_removed
+# - plugin:project_gen:error
+
+[dependencies]
+cookiecutter = ">=2.5.0"
+GitPython = ">=3.1.40"

@@ -1,0 +1,50 @@
+# File system monitor plugin configuration
+
+name = "fs_monitor"
+version = "0.1.0"
+description = "Monitors file system changes in the monorepo"
+
+# Paths to monitor (relative to monorepo root)
+watch_paths = [
+    ".",  # Monitor entire monorepo
+    "src/",  # Monitor source code
+    "meta/plugins/"  # Monitor plugins
+]
+
+# Additional patterns to ignore
+ignore_patterns = [
+    ".git",
+    "__pycache__",
+    "*.pyc",
+    ".coverage",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".venv",
+    "node_modules",
+    ".DS_Store",
+    "*.swp",
+    "*.swo",
+    "*.swn",
+    "*.log",
+    "*.tmp",
+    "*.temp",
+    "build/",
+    "dist/",
+    "*.egg-info/",
+    ".tox/",
+    ".idea/",
+    ".vscode/",
+    "coverage/",
+    "htmlcov/"
+]
+
+# Event namespaces:
+# - plugin:fs_monitor:fs:created
+# - plugin:fs_monitor:fs:deleted
+# - plugin:fs_monitor:fs:modified
+# - plugin:fs_monitor:fs:moved
+# - plugin:fs_monitor:fs:monitor:started
+# - plugin:fs_monitor:fs:monitor:stopped
+
+[dependencies]
+watchdog = ">=2.1.0"

@@ -26,7 +26,7 @@ def temp_dir() -> Generator[Path, None, None]:
 @pytest.fixture
 def cli_env(temp_dir: Path) -> Dict[str, str]:
     """Provide environment variables for CLI tests."""
-    env = os.environ.copy()
+    env = {}  # Start with empty env instead of copying os.environ
     env["METAREPOS_CONFIG"] = str(temp_dir / "metarepo.toml")
     env["METAREPOS_PLUGIN_DIR"] = str(temp_dir / "plugins")
     env["METAREPOS_LOG_DIR"] = str(temp_dir / "logs")
@@ -57,11 +57,24 @@ def setup_test_env(temp_dir: Path, test_config: Dict, cli_env: Dict[str, str]) -
         toml.dump(test_config, f)
 
 @pytest.fixture
-def isolated_cli_runner(cli_env: Dict[str, str], setup_test_env) -> Generator[CliRunner, None, None]:
+def isolated_cli_runner(cli_env: Dict[str, str], monkeypatch) -> Generator[CliRunner, None, None]:
     """Provide an isolated CLI runner with test environment."""
-    runner = CliRunner(env=cli_env)
+    # Clear environment variables
+    for var in list(os.environ.keys()):
+        monkeypatch.delenv(var, raising=False)
+    
+    # Set test environment variables
+    for key, value in cli_env.items():
+        monkeypatch.setenv(key, value)
+    
+    # Create runner with mix_stderr=True to capture stderr
+    runner = CliRunner(mix_stderr=True)
     with runner.isolated_filesystem():
+        # Change to the isolated directory
+        cwd = os.getcwd()
         yield runner
+        # Change back to original directory
+        os.chdir(cwd)
 
 @pytest.fixture
 def setup_test_plugin(temp_dir: Path, test_plugin_template: str, test_plugin_toml: str):
@@ -81,3 +94,21 @@ def setup_test_plugin(temp_dir: Path, test_plugin_template: str, test_plugin_tom
         return plugin_dir
     
     return _setup_plugin
+
+@pytest.fixture(autouse=True)
+def clean_env(monkeypatch):
+    """Clean environment variables before each test."""
+    # Store original environment
+    orig_env = dict(os.environ)
+    
+    # Clear environment variables
+    for var in list(os.environ.keys()):
+        monkeypatch.delenv(var, raising=False)
+    
+    yield
+    
+    # Restore original environment
+    for var in list(os.environ.keys()):
+        monkeypatch.delenv(var, raising=False)
+    for key, value in orig_env.items():
+        monkeypatch.setenv(key, value)

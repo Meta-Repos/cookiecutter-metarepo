@@ -1,6 +1,7 @@
 [run]
 branch = True
 parallel = True
+concurrency = multiprocessing
 source = 
     core
     cli
@@ -9,6 +10,7 @@ omit =
     */__init__.py
     */conftest.py
     .venv/*
+    plugins/*
 
 [paths]
 core =
@@ -34,11 +36,14 @@ show_missing = True
 fail_under = 80
 skip_covered = False
 skip_empty = True
+sort = Cover
 
 [html]
 directory = coverage_html
 title = MetaRepos Coverage Report
 show_contexts = True
+skip_covered = False
+skip_empty = False
 
 [xml]
 output = coverage.xml
