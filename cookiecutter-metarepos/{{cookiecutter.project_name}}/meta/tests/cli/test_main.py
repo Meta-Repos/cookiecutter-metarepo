@@ -10,7 +10,7 @@ import pytest
 import toml
 from click.testing import CliRunner
 
-from cli.main import cli, get_config_path, load_config
+from cli.main import cli, get_config_path, load_config, __version__
 
 def strip_ansi(text: str) -> str:
     """Remove ANSI color codes from text."""
@@ -70,7 +70,7 @@ class TestBasicCommands:
         """Test the CLI version command."""
         result = isolated_cli_runner.invoke(cli, ["--version"])
         assert result.exit_code == 0
-        assert re.match(r'cli, version \d+\.\d+\.\d+', result.output)
+        assert f"metarepos, version {__version__}" in result.output
     
     def test_health_command_no_config(self, isolated_cli_runner: CliRunner):
         """Test the health command with no config."""
@@ -307,3 +307,7 @@ def test_missing_plugin_dir(isolated_cli_runner: CliRunner):
     result = isolated_cli_runner.invoke(cli, ["plugin", "list"])
     assert result.exit_code == 0
     assert "Plugin directory not found" in strip_ansi(result.output)
+
+def test_version_format():
+    """Test version string format."""
+    assert re.match(r'^\d+\.\d+\.\d+$', __version__), "Version should be in format X.Y.Z"

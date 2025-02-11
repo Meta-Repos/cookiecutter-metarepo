@@ -10,6 +10,9 @@ import toml
 from rich.console import Console
 from rich.table import Table
 
+# Package version
+__version__ = "0.1.0"
+
 console = Console()
 
 def get_config_path() -> Path:
@@ -32,7 +35,7 @@ def load_config() -> dict:
         return {}
 
 @click.group()
-@click.version_option()
+@click.version_option(version=__version__, prog_name="metarepos")
 def cli() -> None:
     """MetaRepos - Monorepo Management Tool"""
     pass
