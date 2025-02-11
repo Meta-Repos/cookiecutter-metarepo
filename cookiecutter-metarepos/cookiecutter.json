@@ -1,0 +1,9 @@
+{
+    "project_name": "mymonorepo",
+    "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_').replace('-', '_') }}",
+    "project_description": "A monorepo managed by MetaRepos",
+    "author_name": "Your Name",
+    "author_email": "your.email@example.com",
+    "version": "0.1.0",
+    "python_version": "3.11"
+}

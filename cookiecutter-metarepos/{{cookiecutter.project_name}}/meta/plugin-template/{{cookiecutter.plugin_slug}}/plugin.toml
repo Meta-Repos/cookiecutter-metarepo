@@ -1,0 +1,57 @@
+name = "{{ cookiecutter.plugin_name }}"
+version = "{{ cookiecutter.version }}"
+author = "{{ cookiecutter.author_name }}"
+author_email = "{{ cookiecutter.author_email }}"
+description = "{{ cookiecutter.plugin_description }}"
+entry_point = "plugin.py"
+has_service = "{{ cookiecutter.has_service }}"
+has_cli = "{{ cookiecutter.has_cli }}"
+has_filesystem = "{{ cookiecutter.has_filesystem }}"
+
+[config_schema.log_level]
+type = "string"
+description = "Logging level for the plugin"
+default = "info"
+choices = ["debug", "info", "warning", "error"]
+
+[config_schema.retry_count]
+type = "integer"
+description = "Number of retry attempts"
+default = 3
+min_value = 1
+max_value = 10
+
+[config_schema.enabled_features]
+type = "list"
+description = "List of enabled features"
+default = []
+
+[[config_schema.enabled_features.nested_schema]]
+type = "string"
+description = "Feature name"
+
+[config_schema.advanced]
+type = "dict"
+description = "Advanced settings"
+required = false
+
+[[config_schema.advanced.nested_schema]]
+name = "timeout"
+type = "float"
+description = "Operation timeout in seconds"
+default = 30.0
+
+[[config_schema.advanced.nested_schema]]
+name = "max_size"
+type = "integer"
+description = "Maximum size in bytes"
+default = 1048576
+
+[config]
+log_level = "info"
+retry_count = 3
+enabled_features = []
+
+[config.advanced]
+timeout = 30.0
+max_size = 1048576

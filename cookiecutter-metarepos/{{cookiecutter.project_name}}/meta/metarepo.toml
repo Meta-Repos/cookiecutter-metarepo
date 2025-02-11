@@ -1,0 +1,20 @@
+[core]
+# Core MetaRepos configuration
+log_level = "info"
+event_log_path = "logs/events.log"
+
+[events]
+# Event system configuration
+host = "127.0.0.1"
+port = 5555
+protocol = "tcp"  # tcp or ipc
+
+[plugins]
+# Plugin-specific configurations
+enabled = []
+search_paths = ["plugins"]
+
+# Individual plugin settings can be added as needed
+# [plugins.plugin-name]
+# setting1 = "value1"
+# setting2 = "value2"

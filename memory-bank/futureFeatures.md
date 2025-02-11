@@ -34,3 +34,12 @@
    - Mount documentation from multiple subprojects
    - Unified view of distributed resources
    - Custom filesystem providers for specialized use cases
+
+9. **Plugin Dependency Management**:
+   - Define plugin dependencies in plugin.toml
+   - Automatic dependency resolution and installation
+   - Version compatibility checking
+   - Circular dependency detection
+   - Optional/conditional dependencies
+   - Plugin load order based on dependencies
+   - Runtime dependency validation

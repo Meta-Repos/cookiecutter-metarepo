@@ -1,0 +1,11 @@
+{
+    "plugin_name": "example-plugin",
+    "plugin_slug": "{{ cookiecutter.plugin_name.lower().replace(' ', '-').replace('_', '-') }}",
+    "plugin_description": "A MetaRepos plugin",
+    "author_name": "Your Name",
+    "author_email": "your.email@example.com",
+    "version": "0.1.0",
+    "has_service": "y",
+    "has_cli": "y",
+    "has_filesystem": "n"
+}
