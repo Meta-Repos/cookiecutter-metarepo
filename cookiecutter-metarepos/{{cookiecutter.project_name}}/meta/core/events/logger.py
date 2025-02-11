@@ -37,7 +37,7 @@ class EventLogger:
         self.current_log_file = self.log_dir / f"events-{current_date}.log"
         
         # Check if we need to rotate
-        if self.current_log_file.exists() and self.current_log_file.stat().st_size > self.max_size:
+        if self.current_log_file and self.current_log_file.exists() and self.current_log_file.stat().st_size > self.max_size:
             self._rotate_logs()
     
     def _rotate_logs(self) -> None:
@@ -73,7 +73,7 @@ class EventLogger:
             self.current_log_file = expected_log_file
         
         # Check if we need to rotate based on size
-        if self.current_log_file.exists() and self.current_log_file.stat().st_size > self.max_size:
+        if self.current_log_file and self.current_log_file.exists() and self.current_log_file.stat().st_size > self.max_size:
             self._rotate_logs()
         
         # Log the event

@@ -2,11 +2,13 @@
 Tests for event logger functionality.
 """
 import json
+from datetime import datetime
 from pathlib import Path
 
 import pytest
+from freezegun import freeze_time
 
-from ....core.events import Event, EventLogger
+from core.events import Event, EventLogger
 
 @pytest.fixture
 def event_logger(tmp_path: Path) -> EventLogger:
@@ -80,7 +82,8 @@ def test_recent_events_retrieval(event_logger: EventLogger):
     assert recent[-1]["namespace"] == "test:logger:recent"
     assert recent[-1]["payload"]["iteration"] == 4
 
-def test_log_file_date_rotation(event_logger: EventLogger, freezer):
+@freeze_time("2025-02-11")
+def test_log_file_date_rotation(event_logger: EventLogger):
     """Test log file rotation based on date."""
     # Log an event on day 1
     event1 = Event.create(
@@ -90,20 +93,19 @@ def test_log_file_date_rotation(event_logger: EventLogger, freezer):
     event_logger.log_event(event1)
     day1_file = event_logger.current_log_file
     
-    # Move to next day
-    freezer.move_to("2025-02-12")
-    
-    # Log an event on day 2
-    event2 = Event.create(
-        namespace="test:logger:day2",
-        payload={"day": 2}
-    )
-    event_logger.log_event(event2)
-    day2_file = event_logger.current_log_file
-    
-    assert day1_file != day2_file
-    assert day1_file.exists()
-    assert day2_file.exists()
+    # Move time forward one day
+    with freeze_time("2025-02-12"):
+        # Log an event on day 2
+        event2 = Event.create(
+            namespace="test:logger:day2",
+            payload={"day": 2}
+        )
+        event_logger.log_event(event2)
+        day2_file = event_logger.current_log_file
+        
+        assert day1_file != day2_file
+        assert day1_file.exists()
+        assert day2_file.exists()
 
 def test_invalid_log_directory(tmp_path: Path):
     """Test logger behavior with invalid directory."""

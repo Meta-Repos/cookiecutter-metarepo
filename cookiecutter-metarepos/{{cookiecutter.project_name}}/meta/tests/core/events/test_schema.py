@@ -5,7 +5,7 @@ from datetime import datetime
 
 import pytest
 
-from ....core.events.schema import Event, validate_event_namespace
+from core.events.schema import Event, validate_event_namespace
 
 def test_event_creation():
     """Test basic event creation."""

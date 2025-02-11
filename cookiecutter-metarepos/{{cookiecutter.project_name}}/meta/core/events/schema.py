@@ -13,9 +13,17 @@ class Event:
     metadata: Optional[Dict] = None
     payload: Optional[Dict] = None
 
+    def __post_init__(self):
+        """Initialize default values for optional fields."""
+        self.metadata = self.metadata or {}
+        self.payload = self.payload or {}
+
     @classmethod
     def create(cls, namespace: str, payload: Optional[Dict] = None, metadata: Optional[Dict] = None) -> 'Event':
         """Create a new event with the current timestamp."""
+        if not validate_event_namespace(namespace):
+            raise ValueError(f"Invalid event namespace: {namespace}")
+        
         return cls(
             namespace=namespace,
             timestamp=datetime.utcnow(),

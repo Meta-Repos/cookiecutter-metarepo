@@ -10,23 +10,31 @@ dependencies = [
     "pyzmq>=25.1.0",
     "pyyaml>=6.0.1",
     "rich>=13.7.0",
+    "toml>=0.10.2",
+    "GitPython>=3.1.40",
 ]
 requires-python = ">={{ cookiecutter.python_version }}"
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.rye]
-managed = true
-dev-dependencies = [
+[project.optional-dependencies]
+dev = [
     "pytest>=7.4.0",
     "black>=23.7.0",
     "isort>=5.12.0",
     "mypy>=1.5.1",
     "pytest-cov>=4.1.0",
     "pytest-asyncio>=0.21.1",
+    "freezegun>=1.2.0",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["cli", "core"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.black]
 line-length = 100
@@ -42,3 +50,9 @@ python_version = "{{ cookiecutter.python_version }}"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --cov=. --cov-report=term-missing"

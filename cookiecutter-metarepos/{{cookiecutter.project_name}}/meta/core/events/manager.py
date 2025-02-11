@@ -1,6 +1,7 @@
 """
 Event management system using ZeroMQ for pub/sub communication.
 """
+import asyncio
 import json
 import logging
 from datetime import datetime
@@ -39,7 +40,10 @@ class EventManager:
         self.log_path = log_path
         self.context: Optional[Context] = None
         self.publisher: Optional[Socket] = None
+        self.subscriber: Optional[Socket] = None
         self.subscribers: Dict[str, List[Callable]] = {}
+        self._running = False
+        self._subscriber_task: Optional[asyncio.Task] = None
         
         # Set up logging
         if log_path:
@@ -53,8 +57,19 @@ class EventManager:
     async def start(self) -> None:
         """Start the event manager."""
         self.context = Context()
+        
+        # Set up publisher
         self.publisher = self.context.socket(zmq.PUB)
         self.publisher.bind(self.address)
+        
+        # Set up subscriber
+        self.subscriber = self.context.socket(zmq.SUB)
+        self.subscriber.connect(self.address)
+        
+        # Start subscriber task
+        self._running = True
+        self._subscriber_task = asyncio.create_task(self._handle_subscriptions())
+        
         logger.info(f"Event manager started on {self.address}")
         
         # Emit system startup event
@@ -62,12 +77,22 @@ class EventManager:
     
     async def stop(self) -> None:
         """Stop the event manager."""
+        self._running = False
+        
         if self.publisher:
             # Emit system shutdown event
             await self.emit(Event.create("core:system:shutdown"))
             
             self.publisher.close()
             self.publisher = None
+        
+        if self.subscriber:
+            self.subscriber.close()
+            self.subscriber = None
+        
+        if self._subscriber_task:
+            await self._subscriber_task
+            self._subscriber_task = None
         
         if self.context:
             self.context.term()
@@ -98,6 +123,14 @@ class EventManager:
             self._log_event(event)
         
         logger.debug(f"Emitted event: {event.namespace}")
+        
+        # Also handle local subscribers directly
+        if event.namespace in self.subscribers:
+            for callback in self.subscribers[event.namespace]:
+                try:
+                    callback(event)
+                except Exception as e:
+                    logger.error(f"Error in event callback: {e}")
     
     def subscribe(self, namespace: str, callback: Callable[[Event], None]) -> None:
         """Subscribe to events with the given namespace."""
@@ -106,6 +139,8 @@ class EventManager:
         
         if namespace not in self.subscribers:
             self.subscribers[namespace] = []
+            if self.subscriber:
+                self.subscriber.setsockopt_string(zmq.SUBSCRIBE, namespace)
         
         self.subscribers[namespace].append(callback)
         logger.debug(f"Added subscriber for {namespace}")
@@ -117,15 +152,48 @@ class EventManager:
                 self.subscribers[namespace].remove(callback)
                 if not self.subscribers[namespace]:
                     del self.subscribers[namespace]
+                    if self.subscriber:
+                        self.subscriber.setsockopt_string(zmq.UNSUBSCRIBE, namespace)
                 logger.debug(f"Removed subscriber for {namespace}")
             except ValueError:
                 pass
+    
+    async def _handle_subscriptions(self) -> None:
+        """Handle incoming events from subscriptions."""
+        if not self.subscriber:
+            return
+        
+        while self._running:
+            try:
+                [namespace_bytes, message_bytes] = await self.subscriber.recv_multipart()
+                namespace = namespace_bytes.decode()
+                message = message_bytes.decode()
+                
+                # Parse event data
+                event_data = json.loads(message)
+                event = Event.from_dict(event_data)
+                
+                # Call subscribers
+                if namespace in self.subscribers:
+                    for callback in self.subscribers[namespace]:
+                        try:
+                            callback(event)
+                        except Exception as e:
+                            logger.error(f"Error in event callback: {e}")
+            
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.error(f"Error handling subscription: {e}")
     
     def _log_event(self, event: Event) -> None:
         """Log an event to the log file."""
         if not self.log_path:
             return
         
-        with open(self.log_path, 'a') as f:
-            event_data = event.to_dict()
-            f.write(json.dumps(event_data) + '\n')
+        try:
+            with open(self.log_path, 'a') as f:
+                event_data = event.to_dict()
+                f.write(json.dumps(event_data) + '\n')
+        except Exception as e:
+            logger.error(f"Failed to log event: {e}")

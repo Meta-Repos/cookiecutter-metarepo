@@ -3,7 +3,7 @@ Tests for plugin configuration schema validation.
 """
 import pytest
 
-from ....core.plugin.schema import (ConfigField, ConfigSchema, ConfigType,
+from core.plugin.schema import (ConfigField, ConfigSchema, ConfigType,
                                   ValidationError, create_schema)
 
 def test_basic_schema_validation():

@@ -1,6 +1,7 @@
 """
 Configuration schema validation for MetaRepos plugins.
 """
+import re
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
@@ -134,7 +135,7 @@ def create_schema(schema_dict: Dict) -> ConfigSchema:
             max_value=field_def.get("max_value"),
             regex_pattern=field_def.get("regex_pattern"),
             nested_schema=[
-                create_schema(nested) for nested in field_def.get("nested_schema", [])
+                ConfigField(**nested) for nested in field_def.get("nested_schema", [])
             ] if "nested_schema" in field_def else None
         )
         fields.append(field)

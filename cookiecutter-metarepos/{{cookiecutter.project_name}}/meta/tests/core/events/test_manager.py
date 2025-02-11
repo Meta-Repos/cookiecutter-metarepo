@@ -8,12 +8,13 @@ from typing import Dict
 import pytest
 import pytest_asyncio
 
-from ....core.events import Event, EventManager
+from core.events import Event, EventManager
 
 @pytest_asyncio.fixture
-async def event_manager(test_config: Dict, temp_log_path: Path) -> EventManager:
+async def event_manager(test_config: Dict, tmp_path: Path) -> EventManager:
     """Provide a configured event manager."""
-    manager = EventManager(test_config, temp_log_path)
+    log_path = tmp_path / "events.log"
+    manager = EventManager(test_config, log_path)
     await manager.start()
     yield manager
     await manager.stop()
@@ -26,7 +27,7 @@ async def test_event_manager_startup(event_manager: EventManager):
     assert event_manager.address == f"tcp://{event_manager.host}:{event_manager.port}"
 
 @pytest.mark.asyncio
-async def test_event_emission(event_manager: EventManager, temp_log_path: Path):
+async def test_event_emission(event_manager: EventManager, tmp_path: Path):
     """Test event emission and logging."""
     # Create and emit an event
     event = Event.create(
@@ -36,8 +37,9 @@ async def test_event_emission(event_manager: EventManager, temp_log_path: Path):
     await event_manager.emit(event)
     
     # Check that the event was logged
-    assert temp_log_path.exists()
-    log_content = temp_log_path.read_text()
+    log_path = tmp_path / "events.log"
+    assert log_path.exists()
+    log_content = log_path.read_text()
     assert "test:event:emitted" in log_content
     assert "test" in log_content
     assert "data" in log_content
@@ -98,7 +100,13 @@ async def test_event_unsubscription(event_manager: EventManager):
 async def test_invalid_event_emission(event_manager: EventManager):
     """Test emission of events with invalid namespaces."""
     with pytest.raises(ValueError):
-        await event_manager.emit(Event.create("invalid:namespace"))
+        event = Event(
+            namespace="invalid:namespace",
+            timestamp=None,
+            metadata={},
+            payload={}
+        )
+        await event_manager.emit(event)
 
 @pytest.mark.asyncio
 async def test_multiple_subscribers(event_manager: EventManager):
@@ -133,9 +141,10 @@ async def test_multiple_subscribers(event_manager: EventManager):
     assert received_2[0].payload == {"test": "multiple"}
 
 @pytest.mark.asyncio
-async def test_event_manager_shutdown(test_config: Dict, temp_log_path: Path):
+async def test_event_manager_shutdown(test_config: Dict, tmp_path: Path):
     """Test event manager shutdown."""
-    manager = EventManager(test_config, temp_log_path)
+    log_path = tmp_path / "events.log"
+    manager = EventManager(test_config, log_path)
     await manager.start()
     
     # Verify startup

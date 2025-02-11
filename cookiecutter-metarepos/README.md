@@ -14,6 +14,7 @@ This is a cookiecutter template for creating new monorepo projects managed by Me
 - Python 3.11 or higher
 - uv package manager
 - git
+- cookiecutter
 
 ## Usage
 
@@ -54,6 +55,12 @@ The project is configured through `meta/metarepo.toml`:
 log_level = "info"
 event_log_path = "logs/events.log"
 
+[events]
+# Event system configuration
+host = "127.0.0.1"
+port = 5555
+protocol = "tcp"
+
 [plugins]
 # Plugin-specific configurations
 enabled = []
@@ -73,6 +80,31 @@ After creating your project:
    ```bash
    metarepo health
    ```
+
+## Testing
+
+The template includes a test script that validates both the template and generated projects:
+
+```bash
+# Make the test script executable
+chmod +x test_template.py
+
+# Run the tests
+./test_template.py
+```
+
+The test script:
+1. Creates a temporary test project from the template
+2. Sets up the Python environment
+3. Creates a test plugin using the plugin template
+4. Runs the core system tests
+5. Runs the plugin tests
+
+This ensures that:
+- The template generates valid projects
+- The core system works correctly
+- The plugin system functions as expected
+- Configuration validation works properly
 
 ## License
 

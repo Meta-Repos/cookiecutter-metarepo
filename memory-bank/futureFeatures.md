@@ -43,3 +43,12 @@
    - Optional/conditional dependencies
    - Plugin load order based on dependencies
    - Runtime dependency validation
+
+10. **Core Configuration Validation**:
+    - Schema-based validation for metarepo.toml
+    - Validation for event system settings (host, port, protocol)
+    - Plugin search path validation and resolution
+    - Environment variable substitution
+    - Configuration inheritance between parent/child metarepo.toml files
+    - Runtime configuration updates and validation
+    - Configuration migration tools for version upgrades
