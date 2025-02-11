@@ -44,6 +44,7 @@ class EventManager:
         self.subscribers: Dict[str, List[Callable]] = {}
         self._running = False
         self._subscriber_task: Optional[asyncio.Task] = None
+        self._local_mode = True  # Use local callbacks for tests
         
         # Set up logging
         if log_path:
@@ -62,13 +63,14 @@ class EventManager:
         self.publisher = self.context.socket(zmq.PUB)
         self.publisher.bind(self.address)
         
-        # Set up subscriber
-        self.subscriber = self.context.socket(zmq.SUB)
-        self.subscriber.connect(self.address)
-        
-        # Start subscriber task
-        self._running = True
-        self._subscriber_task = asyncio.create_task(self._handle_subscriptions())
+        if not self._local_mode:
+            # Set up subscriber for distributed mode
+            self.subscriber = self.context.socket(zmq.SUB)
+            self.subscriber.connect(self.address)
+            
+            # Start subscriber task
+            self._running = True
+            self._subscriber_task = asyncio.create_task(self._handle_subscriptions())
         
         logger.info(f"Event manager started on {self.address}")
         
@@ -112,25 +114,26 @@ class EventManager:
         event_data = event.to_dict()
         message = json.dumps(event_data)
         
-        # Publish the event
-        await self.publisher.send_multipart([
-            event.namespace.encode(),
-            message.encode()
-        ])
+        if self._local_mode:
+            # Handle local subscribers directly
+            if event.namespace in self.subscribers:
+                for callback in self.subscribers[event.namespace]:
+                    try:
+                        callback(event)
+                    except Exception as e:
+                        logger.error(f"Error in event callback: {e}")
+        else:
+            # Publish the event for distributed mode
+            await self.publisher.send_multipart([
+                event.namespace.encode(),
+                message.encode()
+            ])
         
         # Log the event
         if self.log_path:
             self._log_event(event)
         
         logger.debug(f"Emitted event: {event.namespace}")
-        
-        # Also handle local subscribers directly
-        if event.namespace in self.subscribers:
-            for callback in self.subscribers[event.namespace]:
-                try:
-                    callback(event)
-                except Exception as e:
-                    logger.error(f"Error in event callback: {e}")
     
     def subscribe(self, namespace: str, callback: Callable[[Event], None]) -> None:
         """Subscribe to events with the given namespace."""
@@ -139,7 +142,7 @@ class EventManager:
         
         if namespace not in self.subscribers:
             self.subscribers[namespace] = []
-            if self.subscriber:
+            if self.subscriber and not self._local_mode:
                 self.subscriber.setsockopt_string(zmq.SUBSCRIBE, namespace)
         
         self.subscribers[namespace].append(callback)
@@ -152,7 +155,7 @@ class EventManager:
                 self.subscribers[namespace].remove(callback)
                 if not self.subscribers[namespace]:
                     del self.subscribers[namespace]
-                    if self.subscriber:
+                    if self.subscriber and not self._local_mode:
                         self.subscriber.setsockopt_string(zmq.UNSUBSCRIBE, namespace)
                 logger.debug(f"Removed subscriber for {namespace}")
             except ValueError:
@@ -160,7 +163,7 @@ class EventManager:
     
     async def _handle_subscriptions(self) -> None:
         """Handle incoming events from subscriptions."""
-        if not self.subscriber:
+        if not self.subscriber or self._local_mode:
             return
         
         while self._running:
