@@ -79,38 +79,65 @@ def verify_plugin_template(meta_dir: Path) -> None:
 
 def run_tests(meta_dir: Path, venv_python: str) -> None:
     """Run all test suites."""
-    # Run core tests with core-only coverage
+    # Clean up any existing coverage data
+    coverage_files = [
+        meta_dir / ".coverage",
+        meta_dir / "coverage.xml",
+        meta_dir / "coverage_html"
+    ]
+    for file in coverage_files:
+        if file.exists():
+            if file.is_dir():
+                shutil.rmtree(file)
+            else:
+                file.unlink()
+    
+    # Run core tests
     print("\nRunning core tests...")
     run_command([
         venv_python,
-        "-m", "pytest",
+        "-m", "coverage",
+        "run",
+        "--source=core",
+        "-m",
+        "pytest",
         "tests/core/",
-        "-v",
-        "--cov=core",
-        "--cov-report=term-missing"
+        "-v"
     ], cwd=meta_dir)
     
-    # Run CLI tests with CLI-only coverage
+    # Run CLI tests
     print("\nRunning CLI tests...")
     run_command([
         venv_python,
-        "-m", "pytest",
+        "-m", "coverage",
+        "run",
+        "--source=cli",
+        "--append",
+        "-m",
+        "pytest",
         "tests/cli/",
-        "-v",
-        "--cov=cli",
-        "--cov-report=term-missing"
+        "-v"
     ], cwd=meta_dir)
     
-    # Run all tests with combined coverage
-    print("\nRunning all tests with combined coverage...")
+    # Generate coverage reports
+    print("\nGenerating coverage reports...")
     run_command([
         venv_python,
-        "-m", "pytest",
-        "tests/",
-        "-v",
-        "--cov=core",
-        "--cov=cli",
-        "--cov-report=term-missing"
+        "-m", "coverage",
+        "report",
+        "--show-missing"
+    ], cwd=meta_dir)
+    
+    run_command([
+        venv_python,
+        "-m", "coverage",
+        "html"
+    ], cwd=meta_dir)
+    
+    run_command([
+        venv_python,
+        "-m", "coverage",
+        "xml"
     ], cwd=meta_dir)
 
 def main():
@@ -178,6 +205,7 @@ def main():
         
         print("\nAll tests completed successfully!")
         print(f"\nTest output is available at: {output_dir}")
+        print(f"Coverage HTML report is available at: {meta_dir}/coverage_html/index.html")
         
         # Deactivate virtual environment if it exists
         if 'VIRTUAL_ENV' in os.environ:
