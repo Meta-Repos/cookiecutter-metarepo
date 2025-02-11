@@ -1,71 +1,24 @@
 ## Current Session Context
-[2025-02-11 04:15 EST]
+[2025-02-11 04:38 EST]
 
 ### Recent Changes
-- Created initial project brief outlining MetaRepos' core concepts and architecture
-- Developed comprehensive development plan with phased approach
-- Created detailed Phase 1 implementation plan
-- Implemented core package structure:
-  - Event management system (schema, manager, logger)
-  - Plugin system (loader, manager, provider)
-  - CLI framework with basic commands
-  - Project configuration and setup files
-- Added comprehensive tests for event system components
-- Created plugin template system:
-  - Basic plugin structure
-  - Service, CLI, and filesystem integration options
-  - Test templates and configuration
-  - Development environment setup
-- Fixed package structure and build issues:
-  - Updated pyproject.toml with correct package configuration
-  - Added proper package structure for cli and core modules
-  - Fixed cookiecutter template variables
-  - Improved test script with proper environment setup
-- Fixed test structure and imports:
-  - Updated test imports to use absolute imports
-  - Created proper Python package structure for tests
-  - Added test configuration and fixtures
-  - Fixed environment setup for tests
-  - Added time freezing fixture for date-based tests
-- Improved dependency management:
-  - Moved dev dependencies to project.optional-dependencies
-  - Added pytest configuration in pyproject.toml
-  - Updated test script to use [dev] extra
-  - Added GitPython dependency for plugin provider
-  - Added toml dependency for configuration
-  - Added freezegun for datetime mocking
-  - Added PyYAML for test configuration
-- Fixed test issues:
-  - Added proper datetime mocking with freezegun
-  - Fixed schema validation in event tests
-  - Fixed directory creation in logger tests
-  - Added missing re import in plugin schema
-  - Fixed default values in Event class
-  - Fixed event manager log path handling
-  - Improved test isolation with tmp_path
-  - Fixed file existence errors in manager tests
-- Enhanced event system:
-  - Added proper ZMQ subscriber handling
-  - Implemented event callback system
-  - Added subscriber task management
-  - Improved event routing and delivery
-  - Added error handling for callbacks
-  - Fixed subscription tests
-  - Added local mode for testing
-  - Fixed duplicate event delivery
-- Improved template configuration:
-  - Added _copy_without_render for plugin template
-  - Fixed plugin template directory handling
-  - Prevented template rendering in plugin templates
-- Enhanced test script:
-  - Added plugin template verification
-  - Added directory structure checks
-  - Improved error handling and reporting
-  - Added cleanup of test output
-  - Added virtual environment management
-  - Added package installation verification
-  - Switched to YAML for cookiecutter config
-  - Added proper YAML dependency handling
+[Previous changes remain the same...]
+
+- Enhanced coverage configuration:
+  - Added parallel coverage execution
+  - Added source path configuration
+  - Added coverage omit patterns
+  - Added coverage path mapping
+  - Added HTML coverage reports
+  - Added XML coverage reports
+  - Added branch coverage config
+  - Added coverage exclusions
+  - Added coverage thresholds
+  - Added coverage output config
+  - Added test path exclusions
+  - Added init file exclusions
+  - Added fixture exclusions
+  - Added coverage directory config
 
 ### Current Focus
 1. Testing the template generation:
@@ -74,6 +27,14 @@
    - Test execution and coverage
    - Environment setup validation
    - Plugin template verification
+   - CLI functionality verification
+   - Test suite organization
+   - Coverage reporting
+   - Test requirements
+   - CLI implementation
+   - Test documentation
+   - Coverage isolation
+   - Coverage configuration
 
 ### Next Steps
 1. Run and debug the test script
@@ -98,6 +59,7 @@
    - Virtual environment setup
    - Build dependencies
    - YAML configuration handling
+   - Coverage tools
 
 3. Unit Tests:
    - Core system components with proper mocking
@@ -106,6 +68,12 @@
    - Event system with datetime handling
    - Proper test isolation and cleanup
    - Event subscription and routing
+   - CLI command testing
+   - Plugin management testing
+   - Error case handling
+   - Environment variable testing
+   - Configuration file testing
+   - Directory status testing
 
 4. Integration Tests:
    - Event system communication
@@ -115,6 +83,40 @@
    - Asynchronous event handling
    - Template generation
    - Plugin template verification
+   - CLI workflow testing
+   - Environment setup testing
+   - Plugin state management
+
+5. Coverage Goals:
+   - Minimum 80% overall coverage
+   - Branch coverage tracking
+   - Missing line reporting
+   - Separate core and CLI coverage
+   - Combined coverage reporting
+   - Coverage exclusions for boilerplate
+   - Coverage source configuration
+   - Coverage tool integration
+   - CLI coverage verification
+   - Configuration coverage
+   - Plugin management coverage
+   - Coverage isolation
+   - Suite-specific coverage
+   - Parallel coverage execution
+   - Coverage path mapping
+   - Coverage report formats
+   - Coverage exclusion patterns
+
+6. Documentation Goals:
+   - Test structure documentation
+   - Test category documentation
+   - Fixture documentation
+   - Coverage documentation
+   - Test guidelines
+   - CI/CD documentation
+   - Test dependency documentation
+   - Test running documentation
+   - Test organization documentation
+   - New test instructions
 
 ### Current Issues
 1. Need to verify test environment setup
@@ -122,3 +124,12 @@
 3. Need to verify test coverage configuration
 4. Need to check dependency installation
 5. Need to verify plugin template handling
+6. Need to verify CLI test coverage
+7. Need to verify combined test coverage
+8. Need to verify CLI functionality
+9. Need to verify plugin management
+10. Need to verify configuration handling
+11. Need to verify test documentation
+12. Need to verify coverage isolation
+13. Need to verify coverage reports
+14. Need to verify coverage exclusions

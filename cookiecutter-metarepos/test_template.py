@@ -77,6 +77,42 @@ def verify_plugin_template(meta_dir: Path) -> None:
     
     print("\nPlugin template verification successful")
 
+def run_tests(meta_dir: Path, venv_python: str) -> None:
+    """Run all test suites."""
+    # Run core tests with core-only coverage
+    print("\nRunning core tests...")
+    run_command([
+        venv_python,
+        "-m", "pytest",
+        "tests/core/",
+        "-v",
+        "--cov=core",
+        "--cov-report=term-missing"
+    ], cwd=meta_dir)
+    
+    # Run CLI tests with CLI-only coverage
+    print("\nRunning CLI tests...")
+    run_command([
+        venv_python,
+        "-m", "pytest",
+        "tests/cli/",
+        "-v",
+        "--cov=cli",
+        "--cov-report=term-missing"
+    ], cwd=meta_dir)
+    
+    # Run all tests with combined coverage
+    print("\nRunning all tests with combined coverage...")
+    run_command([
+        venv_python,
+        "-m", "pytest",
+        "tests/",
+        "-v",
+        "--cov=core",
+        "--cov=cli",
+        "--cov-report=term-missing"
+    ], cwd=meta_dir)
+
 def main():
     # Create test output directory
     script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
@@ -137,15 +173,8 @@ def main():
         # Verify plugin template
         verify_plugin_template(meta_dir)
         
-        # Run core tests
-        print("\nRunning core tests...")
-        run_command([
-            venv_python,
-            "-m", "pytest",
-            "tests/",
-            "-v",
-            "--cov=core"
-        ], cwd=meta_dir)
+        # Run tests
+        run_tests(meta_dir, venv_python)
         
         print("\nAll tests completed successfully!")
         print(f"\nTest output is available at: {output_dir}")

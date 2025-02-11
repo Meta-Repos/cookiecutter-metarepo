@@ -1,0 +1,44 @@
+[run]
+branch = True
+parallel = True
+source = 
+    core
+    cli
+omit =
+    tests/*
+    */__init__.py
+    */conftest.py
+    .venv/*
+
+[paths]
+core =
+    core/
+    */core/
+cli =
+    cli/
+    */cli/
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if __name__ == .__main__.:
+    raise NotImplementedError
+    if TYPE_CHECKING:
+    pass
+    \.\.\.
+    raise ImportError
+    except ImportError:
+    raise NotImplementedError
+show_missing = True
+fail_under = 80
+skip_covered = False
+skip_empty = True
+
+[html]
+directory = coverage_html
+title = MetaRepos Coverage Report
+show_contexts = True
+
+[xml]
+output = coverage.xml

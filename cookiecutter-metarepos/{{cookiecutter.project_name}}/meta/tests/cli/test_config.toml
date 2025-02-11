@@ -1,0 +1,40 @@
+# Test configuration for MetaRepos CLI tests
+
+[meta]
+name = "test-monorepo"
+version = "0.1.0"
+description = "Test monorepo for CLI testing"
+
+[plugins]
+directory = "plugins"
+enabled = []
+
+[events]
+host = "127.0.0.1"
+port = 5555
+protocol = "tcp"
+
+[logging]
+directory = "logs"
+level = "DEBUG"
+
+[test]
+plugin_template = """
+from core.plugin import Plugin
+
+class TestPlugin(Plugin):
+    def __init__(self):
+        super().__init__()
+    
+    def start(self):
+        pass
+    
+    def stop(self):
+        pass
+"""
+
+plugin_toml = """
+name = "{plugin_name}"
+version = "0.1.0"
+description = "Test plugin for CLI testing"
+"""
