@@ -1,111 +1,165 @@
-# MetaRepos Cookiecutter Template
+# MetaRepos Template
 
-This is a cookiecutter template for creating new monorepo projects managed by MetaRepos.
+A cookiecutter template for creating monorepo management tools with MetaRepos.
 
 ## Features
 
-- Modern Python packaging with uv
-- Event-driven plugin architecture
-- Built-in monorepo management tools
-- Extensible through plugins
+- 🔧 **Plugin System**: Extensible plugin architecture for custom functionality
+- 📦 **Event System**: Robust event management with ZMQ pub/sub
+- 🛠️ **CLI Interface**: Rich command-line interface with plugin management
+- 📝 **Configuration**: TOML-based configuration with environment variable support
+- 🧪 **Test Coverage**: Comprehensive test suite with coverage reporting
+- 📚 **Documentation**: Detailed documentation and examples
 
 ## Requirements
 
-- Python 3.11 or higher
-- uv package manager
-- git
+- Python 3.11+
 - cookiecutter
+- Git
 
-## Usage
+## Installation
 
 ```bash
-# Install cookiecutter if you haven't already
+# Install cookiecutter
 pip install cookiecutter
 
 # Create a new project
-cookiecutter gh:your-username/cookiecutter-metarepos
-
-# Follow the prompts to configure your project
+cookiecutter gh:rooveterinaryinc/cookiecutter-metarepos
 ```
 
 ## Project Structure
 
 ```
-meta/                   # Built-in folder of metarepo + supporting software
-    .venv/              # Virtual env
-    pyproject.toml      # Setup for virtualenv
-    cli/                # CLI package
-    core/               # Core event management system
-    plugins/            # Plugin management and core plugins
-    metarepo.toml       # Global config file
-src/                    # Project contents
-    data_model/         # Data model files
-    libraries/          # Shared libraries across projects
-    projects/           # Subprojects (APIs, frontends, etc.)
-    docs/               # Documentation
+mymonorepo/
+├── meta/                 # MetaRepos management tool
+│   ├── cli/             # CLI implementation
+│   ├── core/            # Core functionality
+│   │   ├── events/      # Event system
+│   │   └── plugin/      # Plugin system
+│   ├── plugins/         # Plugin directory
+│   ├── tests/           # Test suite
+│   ├── metarepo.toml    # Configuration file
+│   └── pyproject.toml   # Package configuration
+└── src/                 # Monorepo source code
+    ├── data_model/      # Data models
+    ├── docs/            # Documentation
+    ├── libraries/       # Shared libraries
+    └── projects/        # Project directories
 ```
 
 ## Configuration
 
-The project is configured through `meta/metarepo.toml`:
+The tool is configured through `metarepo.toml` and environment variables:
 
 ```toml
-[core]
-# Core MetaRepos configuration
-log_level = "info"
-event_log_path = "logs/events.log"
+[meta]
+name = "mymonorepo"
+version = "0.1.0"
+description = "My monorepo management tool"
+
+[plugins]
+directory = "plugins"
+enabled = []
 
 [events]
-# Event system configuration
 host = "127.0.0.1"
 port = 5555
 protocol = "tcp"
-
-[plugins]
-# Plugin-specific configurations
-enabled = []
-search_paths = ["plugins"]
 ```
 
-## Development
+Environment variables:
+- `METAREPOS_CONFIG`: Path to configuration file
+- `METAREPOS_PLUGIN_DIR`: Plugin directory location
+- `METAREPOS_LOG_DIR`: Log directory location
 
-After creating your project:
+## CLI Commands
 
-1. Change into your project directory
-2. Activate the virtual environment:
-   ```bash
-   source meta/.venv/bin/activate
-   ```
-3. Run the health check:
-   ```bash
-   metarepo health
-   ```
+```bash
+# Show help
+metarepos --help
+
+# Check health status
+metarepos health
+
+# Show monorepo status
+metarepos status
+
+# Plugin management
+metarepos plugin list
+metarepos plugin install <plugin>
+metarepos plugin uninstall <plugin>
+metarepos plugin enable <plugin>
+metarepos plugin disable <plugin>
+```
+
+## Plugin Development
+
+Plugins extend the tool's functionality:
+
+```python
+from core.plugin import Plugin
+
+class MyPlugin(Plugin):
+    def __init__(self):
+        super().__init__()
+    
+    def start(self):
+        # Plugin initialization
+        pass
+    
+    def stop(self):
+        # Plugin cleanup
+        pass
+```
+
+Configuration in `plugin.toml`:
+```toml
+name = "my-plugin"
+version = "0.1.0"
+description = "My custom plugin"
+```
 
 ## Testing
 
-The template includes a test script that validates both the template and generated projects:
+The project includes comprehensive tests:
 
 ```bash
-# Make the test script executable
-chmod +x test_template.py
+# Install test dependencies
+pip install -r requirements-test.txt
 
-# Run the tests
-./test_template.py
+# Run tests
+python test_template.py
 ```
 
-The test script:
-1. Creates a temporary test project from the template
-2. Sets up the Python environment
-3. Creates a test plugin using the plugin template
-4. Runs the core system tests
-5. Runs the plugin tests
+Test coverage reports are generated in HTML and XML formats.
 
-This ensures that:
-- The template generates valid projects
-- The core system works correctly
-- The plugin system functions as expected
-- Configuration validation works properly
+## Development
+
+1. Create a virtual environment:
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Linux/macOS
+.venv\Scripts\activate     # Windows
+```
+
+2. Install dependencies:
+```bash
+pip install -e .[dev]
+```
+
+3. Run tests:
+```bash
+pytest tests/ -v --cov=core --cov=cli
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests
+5. Submit a pull request
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the LICENSE file for details.
